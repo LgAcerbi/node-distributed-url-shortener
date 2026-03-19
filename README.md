@@ -4,7 +4,16 @@
 - Needs to work for 10 years
 - 200 Ms for generating a short url
 - 200 Ms for redirecting to the complete url
+- Analytics for how many people clicked each link
 
 ## Solutions
 - 7 Chars = 62^7 combinations = 3.5 trillion combinations
 - Have a counter of each short url generated, use that counter to divide by 62 and keep doing that tracking the remainder of each operation, until the division is 0. With the remainder of each division we track the char it represents in base 62
+
+## Questions
+- How to rate limit
+- How to implement database sharding
+- How to proceed if a database shard fails
+- How to distribute short urls evenly across shards
+- How to scale caching
+- How to keep track of the counter without the primary key in the DB to avoid an additional lookup
