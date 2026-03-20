@@ -16,6 +16,11 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-    "customConditions": ["@workspace/source"]
+    "customConditions": ["@workspace/source"],
+    "baseUrl": ".",
+    "paths": {
+      "@url-shortener/entities": ["libs/entities/src/index.ts"],
+      "@url-shortener/ports": ["libs/ports/src/index.ts"]
+    }
   }
 }

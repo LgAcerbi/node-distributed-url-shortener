@@ -5,6 +5,12 @@
   "references": [
     {
       "path": "./apps/url-shortener-service"
+    },
+    {
+      "path": "./libs/entities"
+    },
+    {
+      "path": "./libs/ports"
     }
   ]
 }
