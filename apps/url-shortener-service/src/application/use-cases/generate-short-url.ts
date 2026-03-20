@@ -4,7 +4,7 @@ import type { CounterRepository } from '../ports/counter-repository';
 import { randomUUID } from 'node:crypto';
 import { ShortUrl } from '@url-shortener/entities';
 
-const { EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30 } = process.env;
+const { SHORT_URL_HOST, EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30 } = process.env;
 
 class GenerateShortUrlUseCase {
     constructor(
@@ -31,7 +31,7 @@ class GenerateShortUrlUseCase {
 
         await this.shortUrlRepository.create(shortUrl);
 
-        return shortUrl.getCode();
+        return `${SHORT_URL_HOST}/${shortUrl.getCode()}`;
     }
 
     private generateBase62Code(counter: number): string {
