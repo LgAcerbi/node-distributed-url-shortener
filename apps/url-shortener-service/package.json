@@ -6,10 +6,14 @@
     "@fastify/cors": "^11.2.0",
     "@fastify/swagger": "^9.5.2",
     "@fastify/swagger-ui": "^5.2.3",
+    "@workspace/drizzle-node-pg": "0.0.1",
+    "@workspace/logger": "0.0.1",
+    "@workspace/redis-node": "0.0.1",
     "dotenv": "^17.2.3",
     "fastify": "^5.2.2",
-    "@workspace/logger": "0.0.1",
-    "@workspace/drizzle-node-pg": "0.0.1",
-    "@workspace/redis-node": "0.0.1"
+    "node-zookeeper-client": "^1.1.3"
+  },
+  "devDependencies": {
+    "@types/node-zookeeper-client": "^1.1.0"
   }
 }

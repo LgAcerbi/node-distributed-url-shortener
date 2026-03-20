@@ -5,32 +5,37 @@ import {
     shortUrlDbSchema,
     HttpShortUrlController,
     PostgresShortUrlRepository,
-    RedisCounterRepository,
     RedisShortUrlCacheRepository,
+    ZookeeperCounterRepository,
+    createZookeeperClient,
 } from './adapters';
 import { GenerateShortUrlUseCase, GetUrlByCodeUseCase } from './application';
 
 async function compose({
+    httpServerPort,
     databaseUrl,
     redisWriteUrl,
     redisReadUrl,
+    zookeeperUrl,
+    zookeeperSessionTimeoutMs = undefined,
     redisConnectTimeoutMs = undefined,
     redisMaxReconnectDelayMs = undefined,
-    httpServerPort = 80,
 }: {
+    httpServerPort: number;
     databaseUrl: string;
     redisWriteUrl: string;
     redisReadUrl: string;
+    zookeeperUrl: string;
+    zookeeperSessionTimeoutMs?: number;
     redisConnectTimeoutMs?: number;
     redisMaxReconnectDelayMs?: number;
-    httpServerPort: number;
 }) {
     const pgClient = new NodePgDrizzleClient(databaseUrl, shortUrlDbSchema);
     const dbInstance = pgClient.getDbInstance();
 
     const redisClient = new RedisNodeClient({
         readUrl: redisReadUrl,
-        writeUrl: redisWriteUrl,
+        writeUrl: redisWriteUrl ?? redisReadUrl,
         connectTimeoutMs: redisConnectTimeoutMs,
         maxReconnectDelayMs: redisMaxReconnectDelayMs,
     });
@@ -41,12 +46,20 @@ async function compose({
     const httpServer = await createHttpServer(httpServerPort);
 
     const shortUrlRepository = new PostgresShortUrlRepository(dbInstance);
-    const shortUrlCacheRepository = new RedisShortUrlCacheRepository(redisReadClient);
-    const counterRepository = new RedisCounterRepository(redisWriteClient);
+    const shortUrlCacheRepository = new RedisShortUrlCacheRepository(
+        redisReadClient,
+        redisWriteClient,
+    );
+    const zookeeperClient = await createZookeeperClient({
+        connectionString: zookeeperUrl,
+        sessionTimeout: zookeeperSessionTimeoutMs,
+    });
+    const counterRepository = new ZookeeperCounterRepository(zookeeperClient);
 
     const generateShortUrlUseCase = new GenerateShortUrlUseCase(
         shortUrlRepository,
         counterRepository,
+        shortUrlCacheRepository,
     );
 
     const getUrlByCodeUseCase = new GetUrlByCodeUseCase(
