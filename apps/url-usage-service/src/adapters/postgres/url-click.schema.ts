@@ -1,8 +1,12 @@
-import { pgTable, uuid, varchar, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, text } from 'drizzle-orm/pg-core';
 
 const postgresUrlClickSchema = pgTable('url_clicks', {
     id: uuid('id').primaryKey(),
-    shortUrlCode: varchar('short_url_code', { length: 7 }).notNull(),
+    shortUrlId: uuid('short_url_id').notNull(),
+    clientIp: varchar('client_ip', { length: 45 }),
+    userAgent: text('user_agent'),
+    referer: text('referer'),
+    kafkaMessageId: varchar('kafka_message_id', { length: 512 }).notNull(),
     clickedAt: timestamp('clicked_at').notNull(),
     createdAt: timestamp('created_at').notNull(),
 });

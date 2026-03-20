@@ -5,6 +5,10 @@ import { logger } from '@workspace/logger';
 
 const { CLICK_TOPIC = 'url-clicks' } = process.env;
 
+function buildKafkaMessageId(topic: string, partition: number, offset: string): string {
+    return `${topic}:${partition}:${offset}`;
+}
+
 class KafkaClickEventConsumer {
     constructor(
         private readonly consumer: Consumer,
@@ -42,32 +46,86 @@ class KafkaClickEventConsumer {
                     return;
                 }
 
-                const event = JSON.parse(value) as {
-                    code: string;
-                    clickedAt: string;
-                };
+                let parsed: unknown;
+                try {
+                    parsed = JSON.parse(value) as unknown;
+                } catch {
+                    logger.warn({ topic, partition, offset: message.offset }, 'Invalid JSON in click event');
+                    return;
+                }
+
+                if (!this.isClickEventPayload(parsed)) {
+                    logger.warn(
+                        { topic, partition, offset: message.offset },
+                        'Click event missing required fields',
+                    );
+                    return;
+                }
+
+                const kafkaMessageId = buildKafkaMessageId(topic, partition, message.offset);
+
+                const codeForLog =
+                    typeof parsed.code === 'string' ? parsed.code : undefined;
+
                 logger.info(
                     {
                         topic,
                         partition,
                         offset: message.offset,
-                        code: event.code,
-                        clickedAt: event.clickedAt,
+                        kafkaMessageId,
+                        code: codeForLog,
+                        shortUrlId: parsed.shortUrlId,
+                        clickedAt: parsed.clickedAt,
                     },
                     'Consumed click event message',
                 );
-                await this.processClickEventUseCase.execute(event);
+
+                await this.processClickEventUseCase.execute({
+                    shortUrlId: parsed.shortUrlId,
+                    clickedAt: parsed.clickedAt,
+                    clientIp: parsed.clientIp,
+                    userAgent: parsed.userAgent,
+                    referer: parsed.referer,
+                    kafkaMessageId,
+                });
+
                 logger.info(
                     {
                         topic,
                         partition,
                         offset: message.offset,
-                        code: event.code,
+                        kafkaMessageId,
+                        code: codeForLog,
                     },
                     'Processed click event message',
                 );
             },
         });
+    }
+
+    private isClickEventPayload(
+        value: unknown,
+    ): value is {
+        shortUrlId: string;
+        code?: string;
+        clickedAt: string;
+        clientIp: string | null;
+        userAgent: string | null;
+        referer: string | null;
+    } {
+        if (typeof value !== 'object' || value === null) {
+            return false;
+        }
+
+        const v = value as Record<string, unknown>;
+
+        return (
+            typeof v.shortUrlId === 'string' &&
+            typeof v.clickedAt === 'string' &&
+            (v.clientIp === null || typeof v.clientIp === 'string') &&
+            (v.userAgent === null || typeof v.userAgent === 'string') &&
+            (v.referer === null || typeof v.referer === 'string')
+        );
     }
 
     private isUnknownTopicError(error: unknown): boolean {
@@ -88,4 +146,4 @@ class KafkaClickEventConsumer {
 }
 
 export default KafkaClickEventConsumer;
-export { KafkaClickEventConsumer };
+export { KafkaClickEventConsumer, buildKafkaMessageId };

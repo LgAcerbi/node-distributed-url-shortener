@@ -1,12 +1,16 @@
 class UrlClick {
     constructor(
         public readonly id: string,
-        public readonly shortUrlCode: string,
+        public readonly shortUrlId: string,
         public readonly clickedAt: Date,
         public readonly createdAt: Date,
+        public readonly clientIp: string | null,
+        public readonly userAgent: string | null,
+        public readonly referer: string | null,
+        public readonly kafkaMessageId: string,
     ) {
-        if (!shortUrlCode || shortUrlCode.length > 7) {
-            throw new Error('Short URL code must be between 1 and 7 characters');
+        if (!kafkaMessageId) {
+            throw new Error('Kafka message id is required');
         }
     }
 }

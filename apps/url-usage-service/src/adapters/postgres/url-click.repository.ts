@@ -11,7 +11,11 @@ class PostgresUrlClickRepository implements UrlClickRepository {
     async create(click: UrlClick): Promise<void> {
         await this.db.insert(postgresUrlClickSchema).values({
             id: click.id,
-            shortUrlCode: click.shortUrlCode,
+            shortUrlId: click.shortUrlId,
+            clientIp: click.clientIp,
+            userAgent: click.userAgent,
+            referer: click.referer,
+            kafkaMessageId: click.kafkaMessageId,
             clickedAt: click.clickedAt,
             createdAt: click.createdAt,
         });
