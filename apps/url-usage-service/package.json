@@ -1,0 +1,12 @@
+{
+  "name": "url-usage-service",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@workspace/drizzle-node-pg": "0.0.1",
+    "@workspace/kafka-node": "0.0.1",
+    "@workspace/logger": "0.0.1",
+    "dotenv": "^17.2.3",
+    "kafkajs": "^2.2.4"
+  }
+}
