@@ -80,6 +80,24 @@
         }
       }
     },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --import tsx --test \"apps/url-shortener-service/src/**/*.spec.ts\""
+      }
+    },
+    "test:coverage": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --import tsx --test --experimental-test-coverage --test-coverage-exclude=\"**/*.spec.ts\" \"apps/url-shortener-service/src/**/*.spec.ts\""
+      }
+    },
+    "test:coverage:html": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "c8 --exclude=\"**/*.spec.ts\" --reporter=text --reporter=html --reporter=lcov node --import tsx --test \"apps/url-shortener-service/src/**/*.spec.ts\""
+      }
+    },
     "docker:build": {
       "dependsOn": ["build", "prune"]
     }
