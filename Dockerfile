@@ -11,8 +11,9 @@ ENV NX_DAEMON=false \
 # Workspace manifest + Nx + TypeScript toolchain
 COPY package.json package-lock.json nx.json tsconfig.base.json tsconfig.json ./
 
-# App source and Nx project config
+# App source and workspace libs
 COPY apps/url-shortener-service ./apps/url-shortener-service
+COPY libs ./libs
 
 RUN npm ci
 
@@ -23,8 +24,9 @@ RUN npx nx run url-shortener-service:build:production --skip-nx-cache \
 
 FROM docker.io/node:22-bookworm-slim AS runner
 
-ENV HOST=0.0.0.0 \
-    PORT=3000
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=80
 
 WORKDIR /app
 
