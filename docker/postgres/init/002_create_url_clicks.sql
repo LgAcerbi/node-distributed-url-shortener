@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS url_clicks (
     client_ip VARCHAR(45),
     user_agent TEXT,
     referer TEXT,
-    kafka_message_id VARCHAR(512) NOT NULL
+    kafka_message_id VARCHAR(512) NOT NULL,
     clicked_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 );
