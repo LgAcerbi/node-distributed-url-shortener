@@ -4,9 +4,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug @workspace/api with Nx",
+      "name": "Debug url-shortener-service with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "@workspace/api"],
+      "runtimeArgs": ["nx", "serve", "url-shortener-service"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
       },
@@ -15,7 +15,7 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/api/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/url-shortener-service/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     }

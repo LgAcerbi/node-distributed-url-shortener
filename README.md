@@ -26,7 +26,7 @@
 
 ## Docker Compose (Postgres, Redis, Adminer, API)
 
-Local stack runs **PostgreSQL**, **Redis**, **Adminer**, and the **api** service on one Compose network.
+Local stack runs **PostgreSQL**, **Redis**, **Adminer**, and the **url-shortener-service** service on one Compose network.
 
 ### Prerequisites
 
@@ -70,7 +70,7 @@ Inside Compose, the API receives:
 - `REDIS_URL` — e.g. `redis://redis:6379`
 - `HOST` / `PORT` — defaults `0.0.0.0` / `3000` inside the container
 
-The multi-stage root **`Dockerfile`** runs `nx build` + `nx prune` for `@workspace/api` so `docker compose build api` does not require a local `dist` folder.
+The multi-stage root **`Dockerfile`** runs `nx build` + `nx prune` for **`url-shortener-service`** so `docker compose build url-shortener-service` does not require a local `dist` folder.
 
 ---
 
@@ -85,19 +85,19 @@ The multi-stage root **`Dockerfile`** runs `nx build` + `nx prune` for `@workspa
 To run the dev server for your app, use:
 
 ```sh
-npx nx serve api
+npx nx serve url-shortener-service
 ```
 
 To create a production bundle:
 
 ```sh
-npx nx build api
+npx nx build url-shortener-service
 ```
 
 To see all available targets to run for a project, run:
 
 ```sh
-npx nx show project api
+npx nx show project url-shortener-service
 ```
 
 These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.

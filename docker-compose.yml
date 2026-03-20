@@ -43,7 +43,7 @@ services:
     environment:
       ADMINER_DEFAULT_SERVER: postgres
 
-  api:
+  url-shortener-service:
     build:
       context: .
       dockerfile: Dockerfile
