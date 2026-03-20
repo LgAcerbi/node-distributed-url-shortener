@@ -19,6 +19,7 @@
     "customConditions": ["@workspace/source"],
     "baseUrl": ".",
     "paths": {
+      "@workspace/errors": ["libs/errors/src/index.ts"],
       "@workspace/drizzle-node-pg": ["libs/drizzle-node-pg/src/index.ts"],
       "@workspace/logger": ["libs/logger/src/index.ts"],
       "drizzle-orm": ["node_modules/drizzle-orm"],
