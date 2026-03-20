@@ -10,5 +10,12 @@ const postgresShortUrlSchema = pgTable("short_urls", {
     deletedAt: timestamp("deleted_at"),
 })
 
+const shortUrlDbSchema = {
+    shortUrls: postgresShortUrlSchema,
+}
+
+type ShortUrlDbSchema = typeof shortUrlDbSchema
+
 export default postgresShortUrlSchema
-export { postgresShortUrlSchema }
+export { postgresShortUrlSchema, shortUrlDbSchema }
+export type { ShortUrlDbSchema }
