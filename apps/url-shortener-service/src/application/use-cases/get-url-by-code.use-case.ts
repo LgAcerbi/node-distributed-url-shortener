@@ -3,7 +3,7 @@ import type { ShortUrlCacheRepository } from '../ports/short-url-cache.repositor
 
 import { NotFoundError } from '@workspace/errors';
 
-const { URL_CACHE_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30 } = process.env;
+const { CACHE_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30 } = process.env;
 
 class GetUrlByCodeUseCase {
     constructor(private readonly shortUrlRepository: ShortUrlRepository, private readonly shortUrlCacheRepository: ShortUrlCacheRepository) {}
@@ -18,7 +18,7 @@ class GetUrlByCodeUseCase {
                 throw new NotFoundError('Short URL not found');
             }
 
-            await this.shortUrlCacheRepository.setCachedUrlByCode(code, url, Number(URL_CACHE_EXPIRATION_TIME));
+            await this.shortUrlCacheRepository.setCachedUrlByCode(code, url, Number(CACHE_EXPIRATION_TIME));
 
             return url;
         }
