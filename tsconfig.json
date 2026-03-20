@@ -11,6 +11,9 @@
         },
         {
             "path": "./libs/logger"
+        },
+        {
+            "path": "./libs/redis-node"
         }
     ]
 }
