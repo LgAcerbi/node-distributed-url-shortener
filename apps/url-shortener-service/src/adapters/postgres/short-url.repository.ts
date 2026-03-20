@@ -20,14 +20,23 @@ class PostgresShortUrlRepository implements ShortUrlRepository {
         });
     }
 
-    async getUrlByCode(code: string): Promise<string | null> {
-        const shortUrl = await this.db.select({ url: postgresShortUrlSchema.url }).from(postgresShortUrlSchema).where(and(eq(postgresShortUrlSchema.code, code), isNull(postgresShortUrlSchema.deletedAt)));
+    async getUrlAndIdByCode(code: string): Promise<{ id: string; url: string } | null> {
+        const shortUrl = await this.db
+            .select({
+                id: postgresShortUrlSchema.id,
+                url: postgresShortUrlSchema.url,
+            })
+            .from(postgresShortUrlSchema)
+            .where(and(eq(postgresShortUrlSchema.code, code), isNull(postgresShortUrlSchema.deletedAt)));
 
         if (!shortUrl[0]) {
             return null;
         }
-        
-        return shortUrl[0].url;
+
+        return {
+            id: String(shortUrl[0].id),
+            url: shortUrl[0].url,
+        };
     }
 }
 

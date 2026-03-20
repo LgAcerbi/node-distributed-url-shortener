@@ -35,7 +35,11 @@ class GenerateShortUrlUseCase {
 
         await this.shortUrlRepository.create(shortUrl);
 
-        await this.shortUrlCacheRepository.setCachedUrlByCode(shortUrl.getCode(), shortUrl.getUrl(), Number(CACHE_EXPIRATION_TIME));
+        await this.shortUrlCacheRepository.setCachedShortUrlByCode(
+            shortUrl.getCode(),
+            { id: shortUrl.id, url: shortUrl.getUrl() },
+            Number(CACHE_EXPIRATION_TIME),
+        );
 
         return `${SHORT_URL_HOST}/${shortUrl.getCode()}`;
     }

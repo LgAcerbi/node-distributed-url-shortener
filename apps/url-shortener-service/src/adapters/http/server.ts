@@ -9,6 +9,7 @@ export const createHttpServer = async (
 ) => {
     const app = Fastify({
         loggerInstance: logger.child({ service: "url-shortener-service" }),
+        trustProxy: true,
     })
 
     await app.register(cors)

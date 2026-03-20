@@ -60,7 +60,22 @@ class HttpShortUrlController {
             handler: async (request: FastifyRequest<{ Params: { code: string } }>, reply: FastifyReply) => {
                 const { code } = request.params;
 
-                const url = await this.getUrlByCodeUseCase.execute(code);
+                const clientIp = request.ip ?? null;
+                const userAgent =
+                    typeof request.headers['user-agent'] === 'string'
+                        ? request.headers['user-agent']
+                        : null;
+                const referer =
+                    typeof request.headers.referer === 'string'
+                        ? request.headers.referer
+                        : null;
+
+                const url = await this.getUrlByCodeUseCase.execute({
+                    code,
+                    clientIp,
+                    userAgent,
+                    referer,
+                });
 
                 return reply.status(302).redirect(url);
             },

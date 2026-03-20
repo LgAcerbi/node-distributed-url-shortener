@@ -1,7 +1,16 @@
+type CachedShortUrlPayload = {
+    id: string;
+    url: string;
+};
+
 interface ShortUrlCacheRepository {
-    getCachedUrlByCode(code: string): Promise<string | null>;
-    setCachedUrlByCode(code: string, url: string, expirationTime: number): Promise<void>;
+    getCachedShortUrlByCode(code: string): Promise<CachedShortUrlPayload | null>;
+    setCachedShortUrlByCode(
+        code: string,
+        payload: CachedShortUrlPayload,
+        expirationTime: number,
+    ): Promise<void>;
 }
 
 export default ShortUrlCacheRepository;
-export type { ShortUrlCacheRepository };
+export type { CachedShortUrlPayload, ShortUrlCacheRepository };

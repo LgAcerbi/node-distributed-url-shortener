@@ -6,6 +6,13 @@ import { NotFoundError } from '@workspace/errors';
 
 const { CACHE_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30 } = process.env;
 
+type GetUrlByCodeInput = {
+    code: string;
+    clientIp: string | null;
+    userAgent: string | null;
+    referer: string | null;
+};
+
 class GetUrlByCodeUseCase {
     constructor(
         private readonly shortUrlRepository: ShortUrlRepository,
@@ -13,27 +20,64 @@ class GetUrlByCodeUseCase {
         private readonly publishShortUrlClickUseCase: PublishShortUrlClickUseCase,
     ) {}
 
-    async execute(code: string): Promise<string> {
-        const cachedUrl = await this.shortUrlCacheRepository.getCachedUrlByCode(code);
+    async execute(input: GetUrlByCodeInput): Promise<string> {
+        const { code, clientIp, userAgent, referer } = input;
+        const clickedAt = new Date().toISOString();
 
-        if (!cachedUrl) {
-            const url = await this.shortUrlRepository.getUrlByCode(code);
+        let cached = await this.shortUrlCacheRepository.getCachedShortUrlByCode(code);
 
-            if (!url) {
+        if (cached && !cached.id) {
+            const row = await this.shortUrlRepository.getUrlAndIdByCode(code);
+
+            if (!row) {
                 throw new NotFoundError('Short URL not found');
             }
 
-            await this.shortUrlCacheRepository.setCachedUrlByCode(code, url, Number(CACHE_EXPIRATION_TIME));
-
-            this.publishShortUrlClickUseCase.execute(code);
-
-            return url;
+            cached = row;
+            await this.shortUrlCacheRepository.setCachedShortUrlByCode(
+                code,
+                row,
+                Number(CACHE_EXPIRATION_TIME),
+            );
         }
 
-        this.publishShortUrlClickUseCase.execute(code);
-        
-        return cachedUrl;
+        if (cached?.id) {
+            this.publishShortUrlClickUseCase.execute({
+                shortUrlId: cached.id,
+                code,
+                clickedAt,
+                clientIp,
+                userAgent,
+                referer,
+            });
+
+            return cached.url;
+        }
+
+        const row = await this.shortUrlRepository.getUrlAndIdByCode(code);
+
+        if (!row) {
+            throw new NotFoundError('Short URL not found');
+        }
+
+        await this.shortUrlCacheRepository.setCachedShortUrlByCode(
+            code,
+            { id: row.id, url: row.url },
+            Number(CACHE_EXPIRATION_TIME),
+        );
+
+        this.publishShortUrlClickUseCase.execute({
+            shortUrlId: row.id,
+            code,
+            clickedAt,
+            clientIp,
+            userAgent,
+            referer,
+        });
+
+        return row.url;
     }
 }
 
 export { GetUrlByCodeUseCase };
+export type { GetUrlByCodeInput };

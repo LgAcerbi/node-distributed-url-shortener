@@ -1,6 +1,10 @@
 type ClickEvent = {
+    shortUrlId: string;
     code: string;
     clickedAt: string;
+    clientIp: string | null;
+    userAgent: string | null;
+    referer: string | null;
 };
 
 interface ClickEventPublisher {

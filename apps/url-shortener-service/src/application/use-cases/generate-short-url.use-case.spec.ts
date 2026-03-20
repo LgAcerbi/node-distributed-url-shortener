@@ -11,7 +11,10 @@ test("GenerateShortUrlUseCase creates and caches short url", async () => {
     let createCallCount = 0;
     let createdCode: string | null = null;
     let createdUrl: string | null = null;
-    let cachedPayload: { code: string; url: string; expirationTime: number } | null = null;
+    let cachedCode = "";
+    let cachedId = "";
+    let cachedUrl = "";
+    let cachedExpirationTime = 0;
 
     const shortUrlRepository: ShortUrlRepository = {
         async create(shortUrl: ShortUrl): Promise<void> {
@@ -19,7 +22,7 @@ test("GenerateShortUrlUseCase creates and caches short url", async () => {
             createdCode = shortUrl.getCode();
             createdUrl = shortUrl.getUrl();
         },
-        async getUrlByCode(): Promise<string | null> {
+        async getUrlAndIdByCode(): Promise<{ id: string; url: string } | null> {
             return null;
         },
     };
@@ -31,11 +34,18 @@ test("GenerateShortUrlUseCase creates and caches short url", async () => {
     };
 
     const shortUrlCacheRepository: ShortUrlCacheRepository = {
-        async getCachedUrlByCode(): Promise<string | null> {
+        async getCachedShortUrlByCode(): Promise<{ id: string; url: string } | null> {
             return null;
         },
-        async setCachedUrlByCode(code: string, url: string, expirationTime: number): Promise<void> {
-            cachedPayload = { code, url, expirationTime };
+        async setCachedShortUrlByCode(
+            code: string,
+            payload: { id: string; url: string },
+            expirationTime: number,
+        ): Promise<void> {
+            cachedCode = code;
+            cachedId = payload.id;
+            cachedUrl = payload.url;
+            cachedExpirationTime = expirationTime;
         },
     };
 
@@ -51,9 +61,9 @@ test("GenerateShortUrlUseCase creates and caches short url", async () => {
     assert.equal(createCallCount, 1);
     assert.equal(createdCode, "21");
     assert.equal(createdUrl, "https://example.com/some/route");
-    assert.deepEqual(cachedPayload, {
-        code: "21",
-        url: "https://example.com/some/route",
-        expirationTime: 1000 * 60 * 60 * 24 * 30,
-    });
+    assert.equal(cachedCode, "21");
+    assert.equal(cachedUrl, "https://example.com/some/route");
+    assert.equal(cachedExpirationTime, 1000 * 60 * 60 * 24 * 30);
+    assert.equal(typeof cachedId, "string");
+    assert.ok(cachedId.length > 0);
 });
