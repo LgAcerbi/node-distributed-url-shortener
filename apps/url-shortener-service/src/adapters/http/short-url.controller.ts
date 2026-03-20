@@ -1,9 +1,10 @@
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyRequest, FastifyReply } from 'fastify';
 import type { GenerateShortUrlUseCase } from '../../application/use-cases/generate-short-url.user-case';
+import type { createHttpServer } from './server';
 
 class HttpShortUrlController {
     constructor(
-        private readonly server: FastifyInstance,
+        private readonly server: Awaited<ReturnType<typeof createHttpServer>>,
         private readonly generateShortUrlUseCase: GenerateShortUrlUseCase,
     ) {}
 
