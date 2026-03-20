@@ -6,7 +6,7 @@ import { ShortUrl } from '@url-shortener/entities';
 
 const { EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30 } = process.env;
 
-class GenerateShortUrl {
+class GenerateShortUrlUseCase {
     constructor(
         private readonly shortUrlRepository: ShortUrlRepository,
         private readonly counterRepository: CounterRepository,
@@ -46,5 +46,5 @@ class GenerateShortUrl {
     }
 }
 
-export default GenerateShortUrl;
-export { GenerateShortUrl };
+export default GenerateShortUrlUseCase;
+export { GenerateShortUrlUseCase };
