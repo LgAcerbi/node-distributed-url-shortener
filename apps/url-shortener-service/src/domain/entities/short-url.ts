@@ -2,7 +2,7 @@ class ShortUrl {
   constructor(
     public readonly id: string,
     public readonly code: string,
-    public readonly originalUrl: string,
+    public readonly url: string,
     public readonly expiresAt: Date,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
@@ -12,8 +12,8 @@ class ShortUrl {
       throw new Error('Code must be 7 characters long');
     }
 
-    if (!originalUrl.startsWith('https')) {
-      throw new Error('Original URL must start with https');
+    if (!url.startsWith('https')) {
+      throw new Error('URL must start with https');
     }
   }
 
@@ -21,8 +21,8 @@ class ShortUrl {
     return this.code;
   }
 
-  getOriginalUrl(): string {
-    return this.originalUrl;
+  getUrl(): string {
+    return this.url;
   }
 }
 

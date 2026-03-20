@@ -1,4 +1,4 @@
-import type { ShortUrl } from '@url-shortener/entities';
+import type { ShortUrl } from '../../domain/entities/short-url';
 
 interface ShortUrlRepository {
   create(shortUrl: ShortUrl): Promise<void>;
