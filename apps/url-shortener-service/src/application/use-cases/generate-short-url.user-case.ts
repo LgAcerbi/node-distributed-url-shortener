@@ -1,8 +1,8 @@
-import type { ShortUrlRepository } from '@url-shortener/ports';
-import type { CounterRepository } from '../ports/counter-repository';
+import type { ShortUrlRepository } from '../ports/short-url.repository';
+import type { CounterRepository } from '../ports/counter.repository';
 
 import { randomUUID } from 'node:crypto';
-import { ShortUrl } from '@url-shortener/entities';
+import { ShortUrl } from '../../domain/entities/short-url';
 
 const { SHORT_URL_HOST, EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30 } = process.env;
 
