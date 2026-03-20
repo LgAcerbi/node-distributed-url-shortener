@@ -46,6 +46,8 @@ Local stack runs **PostgreSQL**, **Redis**, **Adminer**, and the **url-shortener
    docker compose up --build
    ```
 
+PostgreSQL schema initialization runs automatically from `docker/postgres/init` when the database volume is created for the first time.
+
 ### URLs & ports (defaults)
 
 | Service    | URL / connection |
