@@ -1,0 +1,38 @@
+# Load-test overlay: 10 url-shortener replicas, nginx LB, optional k6 runner.
+# Requires Docker Compose v2.24+ for `ports: !override []` merge.
+#
+# Usage (from repo root):
+#   docker compose -f docker-compose.yml -f loadtest/docker-compose.yml up --build -d
+#   docker compose -f docker-compose.yml -f loadtest/docker-compose.yml run --rm k6
+#
+# If `deploy.replicas` is ignored by your Compose version, scale explicitly:
+#   docker compose -f docker-compose.yml -f loadtest/docker-compose.yml up --build -d --scale url-shortener-service=10
+
+services:
+  postgres:
+    command: postgres -c max_connections=200
+
+  url-shortener-service:
+    ports: !override []
+    deploy:
+      replicas: 10
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - '${LOADTEST_NGINX_PORT:-9080}:80'
+    volumes:
+      - ./loadtest/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      url-shortener-service:
+        condition: service_started
+
+  k6:
+    image: grafana/k6:latest
+    profiles: [loadtest]
+    depends_on:
+      nginx:
+        condition: service_started
+    volumes:
+      - ./loadtest/script.js:/script.js:ro
+    command: run /script.js
