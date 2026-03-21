@@ -60,6 +60,7 @@ That split matters: the redirect path is kept fast even if analytics persistence
 apps/
   url-shortener-service/   Fastify API + redirect service
   url-usage-service/       Kafka consumer for click analytics
+loadtest/                  Docker Compose overlay + k6 script for scale testing
 libs/
   drizzle-node-pg/         Shared Postgres + Drizzle bootstrap
   kafka-node/              Shared Kafka client bootstrap
@@ -173,6 +174,94 @@ Build the Docker images through Nx-aware compose builds:
 ```sh
 docker compose build url-shortener-service url-usage-service
 ```
+
+## Load testing
+
+The [`loadtest/`](loadtest/) overlay runs **10 replicas** of `url-shortener-service` behind **nginx**, sustains **1,000 `POST /short-url` requests per second for 60 seconds** with [Grafana k6](https://k6.io/), and raises PostgreSQL `max_connections` to **200** so 10 app pools (default 10 clients each) do not exhaust the database.
+
+**Requirements:** Docker Compose **v2.24+** (for `ports: !override []` when merging compose files). Docker Desktop 4.27+ is sufficient.
+
+### Start the scaled stack
+
+From the repository root (uses your existing `.env`):
+
+```sh
+docker compose -f docker-compose.yml -f loadtest/docker-compose.yml up --build -d
+```
+
+- Nginx is published on **`http://localhost:9080`** (override with `LOADTEST_NGINX_PORT` in `.env`).
+- The API is no longer bound on the host per replica (only reachable via nginx on 9080 in this mode).
+
+If your Compose version ignores `deploy.replicas`, scale explicitly:
+
+```sh
+docker compose -f docker-compose.yml -f loadtest/docker-compose.yml up --build -d --scale url-shortener-service=10
+```
+
+### Run k6 (in Docker)
+
+`k6` is on the `loadtest` profile so it does not start with `up -d`. Run the scenario after services are healthy:
+
+```sh
+docker compose -f docker-compose.yml -f loadtest/docker-compose.yml run --rm k6
+```
+
+### Reading the k6 summary
+
+When the run finishes, k6 prints a **TOTAL RESULTS** block to the terminal. Use it to confirm the target load and health of the stack:
+
+| Metric | What to look for |
+|--------|------------------|
+| `iterations` / `http_reqs` | About **60,000** over **60s** (~**1,000/s**), matching the scenario |
+| `checks_succeeded` | **100%** and `✓ status is 201` — every create returned `201 Created` |
+| `http_req_failed` | **0%** — no transport or HTTP errors under load |
+| `http_req_duration` | Latency percentiles (`med`, `p(90)`, `p(95)`) for how fast replicas + Postgres + ZooKeeper handled each request |
+| `vus` | How many virtual users k6 needed to sustain the rate (depends on response time and script limits) |
+
+### Example results (reference run)
+
+Below is a condensed example from a successful run (10 replicas, nginx on port **9080**, k6 in Docker). Your hardware and Docker settings will change the exact numbers; the important part is **~60k requests**, **~1k/s**, **0% failed**, and **all checks passed**.
+
+```text
+scenarios: (100.00%) 1 scenario, 1000 max VUs, 1m30s max duration (incl. graceful stop):
+         * generate_short_urls: 1000.00 iterations/s for 1m0s (maxVUs: 1000, gracefulStop: 30s)
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 60001   999.982011/s
+    checks_succeeded...: 100.00% 60001 out of 60001
+    checks_failed......: 0.00%   0 out of 60001
+
+    ✓ status is 201
+
+    HTTP
+    http_req_duration..............: avg=5.94ms min=1.56ms med=3.5ms  max=211.24ms p(90)=9.32ms p(95)=15.86ms
+    http_req_failed................: 0.00% 0 out of 60001
+    http_reqs......................: 60001 999.982011/s
+
+    EXECUTION
+    iteration_duration.............: avg=6.17ms min=2.32ms med=3.68ms max=211.91ms p(90)=9.55ms p(95)=16.21ms
+    iterations.....................: 60001 999.982011/s
+    vus............................: 15    min=3          max=63
+```
+
+If `http_req_failed` rises or `checks_succeeded` drops, inspect `docker compose … logs url-shortener-service`, `postgres`, `zookeeper`, and host CPU/memory.
+
+### Run k6 on your machine
+
+With the stack up, install k6 and point at nginx:
+
+```sh
+k6 run -e BASE_URL=http://localhost:9080 loadtest/script.js
+```
+
+### Tear down
+
+```sh
+docker compose -f docker-compose.yml -f loadtest/docker-compose.yml down
+```
+
+Use `down -v` only if you also want to wipe PostgreSQL data.
 
 ## API
 
